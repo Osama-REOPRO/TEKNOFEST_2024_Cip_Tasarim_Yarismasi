@@ -73,7 +73,7 @@ module teknofest_wrapper #(
     // Core'u burada cagirin. core_mem struct'ini baglayin.
     // core_clk ve core_rst_n sinyallerini baglamayi unutmayin.
     // I think these signals should be connected to the core so it can make memory requests and get responses
-    assign core_mem.req = 1'b0;
+    assign core_mem.req = core.memory_cycle.MemWriteM;
     assign core_mem.we  = 1'b0;
     assign core_mem.addr = '0;
     assign core_mem.wdata = '0;
