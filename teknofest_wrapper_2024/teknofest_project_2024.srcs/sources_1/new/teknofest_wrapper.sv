@@ -54,9 +54,12 @@ module teknofest_wrapper #(
         logic [15:0]  wstrb;
         logic [127:0] rdata;
         logic         rvalid;
-    } mem_t;
+    } mem_t; // this struct simply contains all the signals one would use to interact with a memory, basically a fast way to declare ports
     
     mem_t core_mem, programmer_mem, sel_mem;
+    // sel_mem: I think this is "selected memory" so that we can switch between core_mem and programmer_mem
+    // core_mem: these are simply the signals connecting the core to the main memory, I might connect these signals to the cache inside the core
+    // programmer_mem: I think this is for programming the core
     
     logic system_reset_n;
     logic programmer_active;
@@ -65,8 +68,11 @@ module teknofest_wrapper #(
     wire core_clk = USE_SRAM ? sys_clk : ui_clk;
     wire core_rst_n = system_reset_n && (USE_SRAM ? sys_rst_n : ui_rst_n);
     
-    // Core'u burada cagirin. core_mem struct'?n? ba?lay?n.
+    Pipeline_top core(.clk(core_clk), .rst_H(!core_rst_n));
+    
+    // Core'u burada cagirin. core_mem struct'ini baglayin.
     // core_clk ve core_rst_n sinyallerini baglamayi unutmayin.
+    // I think these signals should be connected to the core so it can make memory requests and get responses
     assign core_mem.req = 1'b0;
     assign core_mem.we  = 1'b0;
     assign core_mem.addr = '0;

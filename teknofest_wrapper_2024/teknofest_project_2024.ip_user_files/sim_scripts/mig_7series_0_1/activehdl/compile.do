@@ -73,8 +73,6 @@ vlog -work xil_defaultlib  -v2k5 -l xil_defaultlib \
 "../../../../teknofest_project_2024.gen/sources_1/ip/mig_7series_0_1/mig_7series_0/user_design/rtl/ui/mig_7series_v4_2_ui_rd_data.v" \
 "../../../../teknofest_project_2024.gen/sources_1/ip/mig_7series_0_1/mig_7series_0/user_design/rtl/ui/mig_7series_v4_2_ui_top.v" \
 "../../../../teknofest_project_2024.gen/sources_1/ip/mig_7series_0_1/mig_7series_0/user_design/rtl/ui/mig_7series_v4_2_ui_wr_data.v" \
-"../../../../teknofest_project_2024.gen/sources_1/ip/mig_7series_0_1/mig_7series_0/user_design/rtl/mig_7series_0_mig_sim.v" \
-"../../../../teknofest_project_2024.gen/sources_1/ip/mig_7series_0_1/mig_7series_0/user_design/rtl/mig_7series_0.v" \
 
 
 vlog -work xil_defaultlib \

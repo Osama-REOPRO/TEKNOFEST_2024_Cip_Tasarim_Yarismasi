@@ -1,14 +1,14 @@
 `timescale 1ns / 1ps
 
 module tb_teknofest_wrapper #(
-    parameter int unsigned USE_SRAM = 0,
+    parameter int unsigned USE_SRAM = 1,
     parameter UART_BAUD_RATE = 750000,
     parameter DDR_FREQ_HZ = 300_000_000
 )();
 
 
 logic sys_rst_n, sys_clk;
-logic ram_prog_rx_i;
+logic ram_prog_rx_i; // wrapper input
 
 
 // osama: main memory related signals
@@ -157,15 +157,30 @@ task send_prog_seq();
     end
   endtask 
   
+   localparam num_of_instr = 10;
+   logic [31:0] test_instr [0:num_of_instr];
+ 	task send_our_test_program();
+    int i;
+	 $readmemh("test_instr_0.mem", test_instr);
+//    send32(num_of_instr);
+    repeat(num_of_instr) begin
+      send32(test_instr[i]);
+      i = i+1;
+    end
+  endtask 
+  
   initial begin
     ram_prog_rx_i = 1'b1;
     if(USE_SRAM == 0)
-        @(posedge u_dut.u_teknofest_memory.init_calib_complete);
+        @(posedge u_dut.u_teknofest_memory.init_calib_complete); // do what at the positive edge of that?
+        // is this maybe for us to use? should we add our own code here to run when the ram module is done instantiating?
     else
         #1000ns;
+	// UART starts here
     $display("Starting to write instructions to DDR");
     send_prog_seq();
-    send_program();
+//    send_program();
+    send_our_test_program();
   end
   
  

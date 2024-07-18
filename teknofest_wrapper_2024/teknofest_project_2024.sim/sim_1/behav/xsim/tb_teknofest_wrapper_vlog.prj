@@ -1,5 +1,5 @@
 # compile verilog/system verilog design source files
-verilog xil_defaultlib  --include "../../../../teknofest_wrapper_2024.srcs" \
+verilog xil_defaultlib  --include "../../../../teknofest_project_2024.srcs/sources_1/imports/sim" --include "../../../../teknofest_wrapper_2024.srcs" \
 "../../../../teknofest_project_2024.gen/sources_1/ip/mig_7series_0_1/mig_7series_0/user_design/rtl/clocking/mig_7series_v4_2_clk_ibuf.v" \
 "../../../../teknofest_project_2024.gen/sources_1/ip/mig_7series_0_1/mig_7series_0/user_design/rtl/clocking/mig_7series_v4_2_infrastructure.v" \
 "../../../../teknofest_project_2024.gen/sources_1/ip/mig_7series_0_1/mig_7series_0/user_design/rtl/clocking/mig_7series_v4_2_iodelay_ctrl.v" \
@@ -64,13 +64,28 @@ verilog xil_defaultlib  --include "../../../../teknofest_wrapper_2024.srcs" \
 "../../../../teknofest_project_2024.gen/sources_1/ip/mig_7series_0_1/mig_7series_0/user_design/rtl/ui/mig_7series_v4_2_ui_rd_data.v" \
 "../../../../teknofest_project_2024.gen/sources_1/ip/mig_7series_0_1/mig_7series_0/user_design/rtl/ui/mig_7series_v4_2_ui_top.v" \
 "../../../../teknofest_project_2024.gen/sources_1/ip/mig_7series_0_1/mig_7series_0/user_design/rtl/ui/mig_7series_v4_2_ui_wr_data.v" \
-"../../../../teknofest_project_2024.gen/sources_1/ip/mig_7series_0_1/mig_7series_0/user_design/rtl/mig_7series_0_mig_sim.v" \
-"../../../../teknofest_project_2024.gen/sources_1/ip/mig_7series_0_1/mig_7series_0/user_design/rtl/mig_7series_0.v" \
+"../../../../teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Downloads/ORCB.v" \
+"../../../../teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Downloads/ZeroCounter32.v" \
+"../../../../teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Downloads/booth_mul.v" \
+"../../../../teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Downloads/carryless_multiplier.v" \
+"../../../../teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Downloads/count_population.v" \
+"../../../../teknofest_project_2024.srcs/sources_1/new/ddr2_model.v" \
+"../../../../teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Desktop/decode_cycle.v" \
+"../../../../teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Desktop/execute_cycle.v" \
+"../../../../teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Desktop/fetch_cycle.v" \
+"../../../../teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Desktop/hazard_unit.v" \
+"../../../../teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Desktop/ksa.v" \
+"../../../../teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Desktop/memory_cycle.v" \
+"../../../../teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Downloads/non_restoring_div.v" \
+"../../../../teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Desktop/pipeline_top.v" \
+"../../../../teknofest_project_2024.srcs/sources_1/imports/sources_1/new/register_files.v" \
+"../../../../teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Desktop/writeback_cycle.v" \
 
-sv xil_defaultlib  --include "../../../../teknofest_wrapper_2024.srcs" \
+sv xil_defaultlib  --include "../../../../teknofest_project_2024.srcs/sources_1/imports/sim" --include "../../../../teknofest_wrapper_2024.srcs" \
 "../../../../teknofest_project_2024.srcs/sources_1/new/programmer.sv" \
 "../../../../teknofest_project_2024.srcs/sources_1/new/teknofest_memory.sv" \
 "../../../../teknofest_project_2024.srcs/sources_1/new/teknofest_wrapper.sv" \
+"../../../../teknofest_project_2024.srcs/sources_1/new/tb_teknofest_wrapper.sv" \
 
 # compile glbl module
 verilog xil_defaultlib "glbl.v"

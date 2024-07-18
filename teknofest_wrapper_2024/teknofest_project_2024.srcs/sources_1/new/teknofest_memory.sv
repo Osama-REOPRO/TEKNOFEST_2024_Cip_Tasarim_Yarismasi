@@ -17,19 +17,22 @@
 
 module teknofest_memory #(
     parameter USE_SRAM  = 1,
-    parameter MEM_DEPTH = 16 // Only valid for SRAM
+    parameter MEM_DEPTH = 16 // Only valid for SRAM/ means the memory array will have 16 entries (each 128 bits wide)
 )(
     input  logic        clk_i,
     input  logic        rst_ni,
     // Memory interface between the core and memory
-    input  logic        req,
-    output logic        gnt,
-    input  logic        we,
-    input  logic[31:0]  addr,
-    input  logic[127:0] wdata,
-    input  logic[15:0]  wstrb,
+    input  logic        req,	// this is like mem_op or like Cyc, it signals the start of an operation
+    output logic        gnt,  // don't know what this is
+										 // gnt is set equal to req on each clock cycle
+										 // rvalid only set when gnt is set (look at line no 112)
+										 // remember this is an output not an input
+    input  logic        we,	// write enable
+    input  logic[31:0]  addr, // byte address
+    input  logic[127:0] wdata, // these are 16 bytes of data that are available in each sram entry
+    input  logic[15:0]  wstrb, //  similar to valid_bytes, determines which of the 
     output logic[127:0] rdata,
-    output logic        rvalid,
+    output logic        rvalid, // read data valid
     
     // Related to DDR MIG
     input logic sys_rst,
@@ -91,12 +94,13 @@ module teknofest_memory #(
             logic [127:0] memory [MEM_DEPTH-1:0];
             
             always_ff@(posedge clk_i) begin
-                if(req && we) begin
+                if(req && we) begin		// write operation
                     for(int i=0; i<16; i++) begin
-                        if(wstrb[i])
+                        if(wstrb[i]) 
+                        	 // only write bytes for which wstrb is asserted
                             memory[addr[4+:ADDR_W]][i*8+:8] <= wdata[i*8 +: 8];
                     end
-                end else if(req && ~we) begin
+                end else if(req && ~we) begin // read operation
                     rdata <= memory[addr[4+:ADDR_W]];
                 end
             end
@@ -121,7 +125,7 @@ module teknofest_memory #(
             assign rvalid       = app_rd_data_valid;
             assign gnt          = (we ? (app_wdf_rdy && app_rdy) : app_rdy) && init_calib_complete;
     
-            mig_7series_0 u_ddr(.*);
+            mig_7series_0 u_ddr(.*);				
 
         end
     endgenerate
