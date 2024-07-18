@@ -157,13 +157,13 @@ task send_prog_seq();
     end
   endtask 
   
-   localparam num_of_instr = 10;
-   logic [31:0] test_instr [0:num_of_instr];
+   localparam num_of_instr = 8;
+   logic [31:0] test_instr [0:num_of_instr-1];
  	task send_our_test_program();
     int i;
     i = 0;
-	 $readmemh("test_instr_0.mem", test_instr);
-//    send32(num_of_instr);
+	 $readmemb("test_instr_0.mem", test_instr);
+    send32(num_of_instr); // doesn't work without this for some reason
     repeat(num_of_instr) begin
       send32(test_instr[i]);
       i = i+1;

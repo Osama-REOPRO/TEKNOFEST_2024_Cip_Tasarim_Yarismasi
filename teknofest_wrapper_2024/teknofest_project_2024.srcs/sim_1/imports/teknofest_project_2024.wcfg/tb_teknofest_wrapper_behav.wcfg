@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="999,995 ps"></ZoomStartTime>
-      <ZoomEndTime time="1,000,002 ps"></ZoomEndTime>
-      <Cursor1Time time="1,000,000 ps"></Cursor1Time>
+      <ZoomStartTime time="490.811639 us"></ZoomStartTime>
+      <ZoomEndTime time="673.047474 us"></ZoomEndTime>
+      <Cursor1Time time="1,000.000000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="194"></NameColumnWidth>
-      <ValueColumnWidth column_width="93"></ValueColumnWidth>
+      <NameColumnWidth column_width="317"></NameColumnWidth>
+      <ValueColumnWidth column_width="459"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="31" />
+   <WVObjectSize size="32" />
    <wvobject fp_name="/tb_teknofest_wrapper/sys_rst_n" type="logic">
       <obj_property name="ElementShortName">sys_rst_n</obj_property>
       <obj_property name="ObjectShortName">sys_rst_n</obj_property>
@@ -97,8 +97,8 @@
       <obj_property name="ObjectShortName">boot_program[11:0][31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_teknofest_wrapper/test_instr" type="array">
-      <obj_property name="ElementShortName">test_instr[0:10][31:0]</obj_property>
-      <obj_property name="ObjectShortName">test_instr[0:10][31:0]</obj_property>
+      <obj_property name="ElementShortName">test_instr[0:7][31:0]</obj_property>
+      <obj_property name="ObjectShortName">test_instr[0:7][31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_teknofest_wrapper/USE_SRAM" type="array">
       <obj_property name="ElementShortName">USE_SRAM[31:0]</obj_property>
@@ -141,8 +141,12 @@
       <obj_property name="ObjectShortName">num_of_instr[31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_teknofest_wrapper/test_instr" type="array">
-      <obj_property name="ElementShortName">test_instr[0:10][31:0]</obj_property>
-      <obj_property name="ObjectShortName">test_instr[0:10][31:0]</obj_property>
+      <obj_property name="ElementShortName">test_instr[0:7][31:0]</obj_property>
+      <obj_property name="ObjectShortName">test_instr[0:7][31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_teknofest_wrapper/u_dut/u_teknofest_memory/\gen_sram.memory " type="array">
+      <obj_property name="ElementShortName">\gen_sram.memory [15:0][127:0]</obj_property>
+      <obj_property name="ObjectShortName">\gen_sram.memory [15:0][127:0]</obj_property>
       <obj_property name="isExpanded"></obj_property>
    </wvobject>
 </wave_config>
