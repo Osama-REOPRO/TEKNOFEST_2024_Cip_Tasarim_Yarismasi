@@ -84,7 +84,7 @@ module teknofest_wrapper #(
 	 // core instantiation
     Pipeline_top core(
 		 .clk(core_clk), 
-		 .rst_H(!core_rst_n)
+		 .rst_H(!core_rst_n),
 		 // instruction mem operations
 		 .mem_instr_we_o(mem_instr_we),
 		 .mem_instr_adrs_o(mem_instr_adrs),
@@ -121,7 +121,7 @@ module teknofest_wrapper #(
 		.mem_data_wsize_i(mem_data_wsize),
 		.mem_data_req_i(mem_data_req),
 		.mem_data_done_o(mem_data_done),
-		.mem_data_rdata_o(mem_data_rdata)
+		.mem_data_rdata_o(mem_data_rdata),
 		// main mem operations
 		.mem_main_we_o(mem_main_we),
 		.mem_main_adrs_o(mem_main_adrs),
