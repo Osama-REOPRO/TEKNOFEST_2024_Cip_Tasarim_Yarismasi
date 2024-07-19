@@ -1,7 +1,49 @@
-module Pipeline_top(clk, rst_H);
+module Pipeline_top(
+	input clk, rst_H,
+	// instruction mem operations
+	output 			mem_instr_we_o,
+	output [31:0]  mem_instr_adrs_o,
+	output [31:0]  mem_instr_wdata_o,
+	output [2:0]   mem_instr_wsize_o,// 0 > byte, 1 > half, 2 > word
+	output 			mem_instr_req_o,
+	input  			mem_instr_done_i,
+	input  [31:0]	mem_instr_rdata_i,
+	// data mem operations
+	output 			mem_data_we_o,
+	output [31:0]  mem_data_adrs_o,
+	output [31:0]  mem_data_wdata_o,
+	output [2:0]   mem_data_wsize_o, // 0 > byte, 1 > half, 2 > word
+	output 			mem_data_req_o,
+	input  			mem_data_done_i,
+	input  [31:0]	mem_data_rdata_i
+);
 
-    // Declaration of I/O
-    input clk, rst_H;
+	// translate pipeline signals into memory signals
+	// and vice versa
+	// could do sign extension here
+	core_memory_interface cmi(
+		.clk(clk), .rst(rst_H),
+		// core signals
+			// todo
+		// external signals
+		// instruction mem operations
+		.mem_instr_we(mem_instr_we_o),
+		.mem_instr_adrs(mem_instr_adrs_o),
+		.mem_instr_wdata(mem_instr_wdata_o),
+		.mem_instr_wsize(mem_instr_wsize_o),
+		.mem_instr_req(mem_instr_req_o),
+		.mem_instr_done(mem_instr_done_i),
+		.mem_instr_rdata(mem_instr_rdata_i),
+		// data mem operations
+		.mem_data_we(mem_data_we_o),
+		.mem_data_adrs(mem_data_adrs_o),
+		.mem_data_wdata(mem_data_wdata_o),
+		.mem_data_wsize(mem_data_wsize_o),
+		.mem_data_req(mem_data_req_o),
+		.mem_data_done(mem_data_done_i),
+		.mem_data_rdata(mem_data_rdata_i)
+	);
+
   
     // Declaration of Interim Wires
     wire rst_F,rst_D, rst_E, rst_M, rst_W;
@@ -140,4 +182,5 @@ module Pipeline_top(clk, rst_H);
                         .rst_M(rst_M), 
                         .rst_W(rst_W)
                         );
+
 endmodule

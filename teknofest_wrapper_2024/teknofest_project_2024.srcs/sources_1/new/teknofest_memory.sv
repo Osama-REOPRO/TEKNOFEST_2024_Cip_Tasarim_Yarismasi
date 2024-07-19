@@ -23,7 +23,7 @@ module teknofest_memory #(
     input  logic        rst_ni,
     // Memory interface between the core and memory
     input  logic        req,	// this is like mem_op or like Cyc, it signals the start of an operation
-    output logic        gnt,  // don't know what this is
+    output logic        gnt,  // seems to behave like a "done" signal
 										 // gnt is set equal to req on each clock cycle
 										 // rvalid only set when gnt is set (look at line no 112)
 										 // remember this is an output not an input

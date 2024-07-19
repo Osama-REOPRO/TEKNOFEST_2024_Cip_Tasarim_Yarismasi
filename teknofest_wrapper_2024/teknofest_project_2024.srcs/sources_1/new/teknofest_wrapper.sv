@@ -1,18 +1,4 @@
 `timescale 1ns / 1ps
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Company:     TUBITAK - TUTEL
-// Project:     TEKNOFEST CIP TASARIM YARISMASI
-// Engineer:    -
-// Version:     1.0
-//*************************************************************************************************************************************************//
-// Create Date: 
-// Module Name: teknofest_wrapper
-//
-// Description: 
-//
-//*************************************************************************************************************************************************//
-// Copyright 2024 TUTEL (IC Design and Training Laboratory - TUBITAK).
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 module teknofest_wrapper #(
@@ -67,17 +53,96 @@ module teknofest_wrapper #(
     
     wire core_clk = USE_SRAM ? sys_clk : ui_clk;
     wire core_rst_n = system_reset_n && (USE_SRAM ? sys_rst_n : ui_rst_n);
-    
-    Pipeline_top core(.clk(core_clk), .rst_H(!core_rst_n));
-    
-    // Core'u burada cagirin. core_mem struct'ini baglayin.
-    // core_clk ve core_rst_n sinyallerini baglamayi unutmayin.
-    // I think these signals should be connected to the core so it can make memory requests and get responses
-    assign core_mem.req = core.memory_cycle.MemWriteM;
-    assign core_mem.we  = 1'b0;
-    assign core_mem.addr = '0;
-    assign core_mem.wdata = '0;
-    assign core_mem.wstrb = '0;
+
+   // mem signals
+	// instruction mem operations
+	wire 			mem_instr_we;
+	wire [31:0] mem_instr_adrs;
+	wire [31:0] mem_instr_wdata;
+	wire [2:0]  mem_instr_wsize;
+	wire 			mem_instr_req;
+	wire 			mem_instr_done;
+	wire [31:0] mem_instr_rdata;
+	// data mem operations
+	wire 			mem_data_we;
+	wire [31:0] mem_data_adrs;
+	wire [31:0] mem_data_wdata;
+	wire [2:0]  mem_data_wsize;
+	wire 			mem_data_req;
+	wire 			mem_data_done;
+	wire [31:0] mem_data_rdata;
+	// main mem operations
+	wire 			 mem_main_we;
+	wire [31:0]  mem_main_adrs;
+	wire [127:0] mem_main_wdata;
+	wire [15:0]  mem_main_wsize;
+	wire 			 mem_main_req;
+	wire 			 mem_main_done;
+	wire [127:0] mem_main_rdata;
+
+    // Core'u burada cagirin.
+	 // core instantiation
+    Pipeline_top core(
+		 .clk(core_clk), 
+		 .rst_H(!core_rst_n)
+		 // instruction mem operations
+		 .mem_instr_we_o(mem_instr_we),
+		 .mem_instr_adrs_o(mem_instr_adrs),
+		 .mem_instr_wdata_o(mem_instr_wdata),
+		 .mem_instr_wsize_o(mem_instr_wsize),
+		 .mem_instr_req_o(mem_instr_req),
+		 .mem_instr_done_i(mem_instr_done),
+		 .mem_instr_rdata_i(mem_instr_rdata),
+		 // data mem operations
+		 .mem_data_we_o(mem_data_we),
+		 .mem_data_adrs_o(mem_data_adrs),
+		 .mem_data_wdata_o(mem_data_wdata),
+		 .mem_data_wsize_o(mem_data_wsize),
+		 .mem_data_req_o(mem_data_req),
+		 .mem_data_done_i(mem_data_done),
+		 .mem_data_rdata_i(mem_data_rdata)
+		 );
+
+	memory_controller mem_ctrl (
+		.clk_i(clk),
+		.rst_i(rst),
+		// instruction mem operations
+		.mem_instr_we_i(mem_instr_we),
+		.mem_instr_adrs_i(mem_instr_adrs),
+		.mem_instr_wdata_i(mem_instr_wdata),
+		.mem_instr_wsize_i(mem_instr_wsize),
+		.mem_instr_req_i(mem_instr_req),
+		.mem_instr_done_o(mem_instr_done),
+		.mem_instr_rdata_o(mem_instr_rdata),
+		// data mem operations
+		.mem_data_we_i(mem_data_we),
+		.mem_data_adrs_i(mem_data_adrs),
+		.mem_data_wdata_i(mem_data_wdata),
+		.mem_data_wsize_i(mem_data_wsize),
+		.mem_data_req_i(mem_data_req),
+		.mem_data_done_o(mem_data_done),
+		.mem_data_rdata_o(mem_data_rdata)
+		// main mem operations
+		.mem_main_we_o(mem_main_we),
+		.mem_main_adrs_o(mem_main_adrs),
+		.mem_main_wdata_o(mem_main_wdata),
+		.mem_main_wsize_o(mem_main_wsize),
+		.mem_main_req_o(mem_main_req),
+		.mem_main_done_i(mem_main_done),
+		.mem_main_rdata_i(mem_main_rdata)
+		);
+
+     // core_mem struct'ini baglayin.
+    // These signals should be connected to the mem controller so it can make memory requests and get responses
+    assign core_mem.req = mem_main_req;
+    assign core_mem.we  = mem_main_we;
+    assign core_mem.addr = mem_main_adrs;
+    assign core_mem.wdata = mem_main_wdata;
+    assign core_mem.wstrb = mem_main_wsize;
+    assign core_mem.gnt = mem_main_done;
+
+    assign mem_main_done = mem_main_we? core_mem.gnt : core_mem.rvalid; // todo: verify that this works
+	 assign mem_main_rdata = core_mem.rdata;
     
     programmer #(
         .UART_BAUD_RATE(UART_BAUD_RATE),
