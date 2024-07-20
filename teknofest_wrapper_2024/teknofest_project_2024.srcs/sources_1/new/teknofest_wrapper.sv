@@ -75,7 +75,7 @@ module teknofest_wrapper #(
 	wire 			 mem_main_we;
 	wire [31:0]  mem_main_adrs;
 	wire [127:0] mem_main_wdata;
-	wire [15:0]  mem_main_wsize;
+	wire [15:0]  mem_main_wstrb;
 	wire 			 mem_main_req;
 	wire 			 mem_main_done;
 	wire [127:0] mem_main_rdata;
@@ -126,7 +126,7 @@ module teknofest_wrapper #(
 		.mem_main_we_o(mem_main_we),
 		.mem_main_adrs_o(mem_main_adrs),
 		.mem_main_wdata_o(mem_main_wdata),
-		.mem_main_wsize_o(mem_main_wsize),
+		.mem_main_wstrb_o(mem_main_wstrb),
 		.mem_main_req_o(mem_main_req),
 		.mem_main_done_i(mem_main_done),
 		.mem_main_rdata_i(mem_main_rdata)
@@ -138,7 +138,7 @@ module teknofest_wrapper #(
     assign core_mem.we  = mem_main_we;
     assign core_mem.addr = mem_main_adrs;
     assign core_mem.wdata = mem_main_wdata;
-    assign core_mem.wstrb = mem_main_wsize;
+    assign core_mem.wstrb = mem_main_wstrb;
     assign core_mem.gnt = mem_main_done;
 
     assign mem_main_done = mem_main_we? core_mem.gnt : core_mem.rvalid; // todo: verify that this works

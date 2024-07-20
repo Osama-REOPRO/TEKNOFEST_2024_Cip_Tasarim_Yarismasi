@@ -5,28 +5,28 @@ module memory_controller(
 	input clk_i, rst_i,
 	// instruction mem operations
 	input  				mem_instr_we_i,
-	input  [31:0]	   mem_instr_adrs_i,
-	input  [31:0]	   mem_instr_wdata_i,
-	input  [2:0]	   mem_instr_wsize_i, // 0:byte, 1:half, 2:word
+	input  	  [31:0] mem_instr_adrs_i,
+	input  	  [31:0]	mem_instr_wdata_i,
+	input  	  [2:0]  mem_instr_wsize_i, // 0:byte, 1:half, 2:word
 	input  				mem_instr_req_i,
 	output reg 			mem_instr_done_o,
 	output reg [31:0]	mem_instr_rdata_o,
 	// data mem operations
 	input  				mem_data_we_i,
-	input  [31:0]  	mem_data_adrs_i,
-	input  [31:0]  	mem_data_wdata_i,
-	input  [2:0]   	mem_data_wsize_i, // 0:byte, 1:half, 2:word
-	input  				mem_data_req_i,
-	output reg			mem_data_done_o,
+	input  	  [31:0] mem_data_adrs_i,
+	input  	  [31:0] mem_data_wdata_i,
+	input  	  [2:0]  mem_data_wsize_i, // 0:byte, 1:half, 2:word
+	input  		  		mem_data_req_i,
+	output reg	  		mem_data_done_o,
 	output reg [31:0]	mem_data_rdata_o,
 	// main mem operations
-	output reg 		   mem_main_we_o,
-	output reg [31:0] mem_main_adrs_o,
-	output reg [31:0] mem_main_wdata_o,
-	output reg [2:0]  mem_main_wsize_o,
-	output reg 		   mem_main_req_o,
-	input  		   	mem_main_done_i,
-	input  [31:0]  	mem_main_rdata_i
+	output reg 		    mem_main_we_o,
+	output reg [31:0]  mem_main_adrs_o,
+	output reg [127:0] mem_main_wdata_o,
+	output reg [15:0]  mem_main_wstrb_o, // careful, strb not size
+	output reg 		    mem_main_req_o,
+	input  		   	 mem_main_done_i,
+	input  	  [127:0] mem_main_rdata_i
 );
 
 // todo: correct params
@@ -210,6 +210,8 @@ always @(posedge clk_i) begin
 							end
 							finish: begin
 								if (!mem_main_done_i) begin
+									if (op_dc == `read_op) mem_data_rdata_o <= read_data_dc[(mem_data_adrs_i[3:2]*32)-1 +: 32]; // todo: verify
+
 									op_sub_state <= read_done_st;
 									cache_sub_state  <= init;
 								end
@@ -229,8 +231,54 @@ always @(posedge clk_i) begin
 
 			write_st: begin
 				// todo
-				// todo: don't forget in read_op after evac and write to return
-				// the data written to cahe return it to the output
+				case (op_sub_state)
+					write_begin_st: begin
+						if (write_needed_cache_dc) op_sub_state <= write_cache_st;
+						else op_sub_state <= write_main_st;
+					end
+
+					write_cache_st: begin
+						// todo
+						case (cache_sub_state)
+							init: begin
+								op_dc 			   <= `write_op;
+								mem_operation_dc  <= 1'b1;
+								valid_bytes_dc <= {(4*b_dc){1'b1}}; // todo: bookmark
+
+								cache_sub_state		<= busy;
+							end
+							busy: begin
+								if (mem_operation_done_dc) begin
+									mem_operation_dc <= 1'b0;
+
+									cache_sub_state 	  <= finish;
+								end
+							end
+							finish: begin
+								if (!mem_operation_done_dc) begin
+									if ((op_dc == `read_op) && hit_occurred_dc) begin
+										// if hit occurred and we are in read state then we simply return the data
+										mem_data_rdata_o <= read_data_dc[(mem_data_adrs_i[3:2]*32)-1 +: 32]; // todo: verify
+										op_sub_state <= read_done_st;
+									end else begin
+										op_sub_state <= read_main_st;
+									end
+
+									cache_sub_state  <= init;
+								end
+							end
+						endcase
+					end
+
+			  		write_main_st: begin
+						// todo
+					end
+
+			  		write_done_st: begin
+						// todo
+					end
+
+				endcase
 			end
 
 			done_st: begin
