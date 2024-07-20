@@ -28,6 +28,12 @@ module memory_controller(
 	input  		   	mem_main_done_i,
 	input  [31:0]  	mem_main_rdata_i
 );
+
+// todo: correct params
+localparam C_dc = 32; // capacity (total words)
+localparam b_dc = 4; // block size (words per block)
+localparam N_dc = 2; // degree of associativity (blocks per set)
+
 // data cache (dc)
 reg [`op_N:0]  op_dc;
 reg 				mem_operation_dc;
@@ -36,10 +42,6 @@ reg  [15:0]		valid_bytes_dc;
 reg  [128:0] 	write_data_dc;
 wire [128:0] 	read_data_dc;
 
-// todo: correct params
-localparam C_dc = 32; // capacity (total words)
-localparam b_dc = 4; // block size (words per block)
-localparam N_dc = 2; // degree of associativity (blocks per set)
 
 reg set_valid_dc;
 reg set_tag_dc;
@@ -152,7 +154,7 @@ always @(posedge clk_i) begin
 			end
 
 			read_st: begin
-				case (op_sub_state) begin
+				case (op_sub_state)
 
 					read_begin_st: begin
 						op_sub_state <= read_needed_cache_dc? read_cache_st : read_main_st;
@@ -180,9 +182,9 @@ always @(posedge clk_i) begin
 									if ((op_dc == `read_op) && hit_occurred_dc) begin
 										// if hit occurred and we are in read state then we simply return the data
 										mem_data_rdata_o <= read_data_dc[(mem_data_adrs_i[3:2]*32)-1 +: 32]; // todo: verify
-										read_sub_state <= read_done_st;
+										op_sub_state <= read_done_st;
 									end else begin
-										read_sub_state <= read_main_st;
+										op_sub_state <= read_main_st;
 									end
 
 									cache_sub_state  <= init;
@@ -208,7 +210,7 @@ always @(posedge clk_i) begin
 							end
 							finish: begin
 								if (!mem_main_done_i) begin
-									read_sub_state <= read_done_st;
+									op_sub_state <= read_done_st;
 									cache_sub_state  <= init;
 								end
 							end
@@ -219,7 +221,7 @@ always @(posedge clk_i) begin
 						if (write_needed_cache_dc || write_needed_main_dc) op_sub_state <= write_st;
 						else op_sub_state <= done_st;
 
-						read_sub_state <= read_begin_st;
+						op_sub_state <= read_begin_st;
 					end
 
 				endcase
@@ -241,9 +243,9 @@ end
 
 cache 
 #(
-	.C(C), // capacity (words)
-	.b(b), // block size (words in block)
-	.N(N)  // degree of associativity
+	.C(C_dc), // capacity (words)
+	.b(b_dc), // block size (words in block)
+	.N(N_dc)  // degree of associativity
 ) 
 cache_data
 (
