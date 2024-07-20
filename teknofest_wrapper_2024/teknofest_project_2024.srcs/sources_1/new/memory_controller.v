@@ -4,13 +4,13 @@
 module memory_controller(
 	input clk_i, rst_i,
 	// instruction mem operations
-	input  			mem_instr_we_i,
-	input  [31:0]  mem_instr_adrs_i,
-	input  [31:0]  mem_instr_wdata_i,
-	input  [2:0]   mem_instr_wsize_i, // 0:byte, 1:half, 2:word
-	input  			mem_instr_req_i,
-	output 			mem_instr_done_o,
-	output [31:0]	mem_instr_rdata_o,
+	input  				mem_instr_we_i,
+	input  [31:0]	   mem_instr_adrs_i,
+	input  [31:0]	   mem_instr_wdata_i,
+	input  [2:0]	   mem_instr_wsize_i, // 0:byte, 1:half, 2:word
+	input  				mem_instr_req_i,
+	output reg 			mem_instr_done_o,
+	output reg [31:0]	mem_instr_rdata_o,
 	// data mem operations
 	input  				mem_data_we_i,
 	input  [31:0]  	mem_data_adrs_i,
@@ -20,13 +20,13 @@ module memory_controller(
 	output reg			mem_data_done_o,
 	output reg [31:0]	mem_data_rdata_o,
 	// main mem operations
-	output 		   mem_main_we_o,
-	output [31:0]  mem_main_adrs_o,
-	output [31:0]  mem_main_wdata_o,
-	output [2:0]   mem_main_wsize_o,
-	output 		   mem_main_req_o,
-	input  		   mem_main_done_i,
-	input  [31:0]  mem_main_rdata_i
+	output reg 		   mem_main_we_o,
+	output reg [31:0] mem_main_adrs_o,
+	output reg [31:0] mem_main_wdata_o,
+	output reg [2:0]  mem_main_wsize_o,
+	output reg 		   mem_main_req_o,
+	input  		   	mem_main_done_i,
+	input  [31:0]  	mem_main_rdata_i
 );
 // data cache (dc)
 reg [`op_N:0]  op_dc;
@@ -65,13 +65,32 @@ localparam init   = 0,
 
 reg [3:0] op_sub_state;
 // read sub states
-localparam read_L1_st    = 0,
-			  read_Main_st  = 1,
-			  read_done_st  = 2;
+localparam read_begin_st = 0,
+			  read_cache_st = 1,
+			  read_main_st  = 2,
+			  read_done_st  = 3;
 // write sub states
-localparam write_L1_st   = 0,
-			  write_Main_st = 1,
-			  write_done_st = 2;
+localparam write_begin_st = 0,
+			  write_cache_st = 1,
+			  write_main_st  = 2,
+			  write_done_st  = 3;
+
+// ######################################### state machine tasks
+// read_op: miss and no clean nor empty
+// write_op: miss and no clean nor empty
+wire evac_needed_dc = !hit_occurred_dc || (!empty_found_dc && !clean_found_dc);
+// read_op: we read if hit or need evac
+// write_op: we read if need evac
+wire read_needed_cache_dc = evac_needed_dc || (op_dc && hit_occurred_dc);
+// read_op: miss
+// write_op: miss
+wire read_needed_main_dc = !hit_occurred_dc;
+// read_op: evac_needed_dc
+// write_op: write_op or evac_needed_dc
+wire write_needed_cache_dc = (op_dc == `write_op) || evac_needed_dc;
+// read_op: evac_needed_dc
+// write_op: evac_needed_dc
+wire write_needed_main_dc = evac_needed_dc;
 
 integer i;
 always @(posedge clk_i) begin
@@ -107,14 +126,112 @@ always @(posedge clk_i) begin
 			end
 
 			lookup_st: begin
-				// todo
+				case (cache_sub_state)
+					init: begin
+						op_dc 				<= `lookup_op;
+						mem_operation_dc 	<= 1'b1;
+
+						cache_sub_state   <= busy;
+					end
+					busy: begin
+						if (mem_operation_done_dc) begin
+							mem_operation_dc <= 1'b0;
+
+							cache_sub_state 	  <= finish;
+						end
+					end
+					finish: begin
+						if (!mem_operation_done_dc) begin
+							if (read_needed_cache_dc || read_needed_main_dc) 	state_dc <= read_st;
+							else 																state_dc <= write_st;
+
+							cache_sub_state <= init;
+						end
+					end
+				endcase
 			end
 
 			read_st: begin
-				// todo
+				case (op_sub_state) begin
+
+					read_begin_st: begin
+						op_sub_state <= read_needed_cache_dc? read_cache_st : read_main_st;
+					end
+
+					read_cache_st: begin
+						// either we read to evacuate, or we read to return
+						case (cache_sub_state)
+							init: begin
+								op_dc 			   <= `read_op;
+								mem_operation_dc  <= 1'b1;
+								valid_bytes_dc <= {(4*b_dc){1'b1}}; // how about all valid? while reading that it
+
+								cache_sub_state		<= busy;
+							end
+							busy: begin
+								if (mem_operation_done_dc) begin
+									mem_operation_dc <= 1'b0;
+
+									cache_sub_state 	  <= finish;
+								end
+							end
+							finish: begin
+								if (!mem_operation_done_dc) begin
+									if ((op_dc == `read_op) && hit_occurred_dc) begin
+										// if hit occurred and we are in read state then we simply return the data
+										mem_data_rdata_o <= read_data_dc[(mem_data_adrs_i[3:2]*32)-1 +: 32]; // todo: verify
+										read_sub_state <= read_done_st;
+									end else begin
+										read_sub_state <= read_main_st;
+									end
+
+									cache_sub_state  <= init;
+								end
+							end
+						endcase
+					end
+
+					read_main_st: begin
+						case (cache_sub_state)
+							init: begin
+								mem_main_we_o   <= 1'b0; // read op
+								mem_main_req_o  <= 1'b1;
+
+								cache_sub_state <= busy;
+							end
+							busy: begin
+								if (mem_main_done_i) begin
+									mem_main_req_o  <= 1'b0;
+
+									cache_sub_state <= finish;
+								end
+							end
+							finish: begin
+								if (!mem_main_done_i) begin
+									read_sub_state <= read_done_st;
+									cache_sub_state  <= init;
+								end
+							end
+						endcase
+					end
+
+					read_done_st: begin
+						if (write_needed_cache_dc || write_needed_main_dc) op_sub_state <= write_st;
+						else op_sub_state <= done_st;
+
+						read_sub_state <= read_begin_st;
+					end
+
+				endcase
 			end
 
 			write_st: begin
+				// todo
+				// todo: don't forget in read_op after evac and write to return
+				// the data written to cahe return it to the output
+			end
+
+			done_st: begin
 				// todo
 			end
 
