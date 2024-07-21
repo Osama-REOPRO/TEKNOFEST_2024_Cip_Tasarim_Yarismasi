@@ -46,8 +46,8 @@ cache_controller
 ) 
 cache_ctrl_instr
 (
-	.i_clk(clk_i),
-	.i_rst(rst_i),
+	.clk_i(clk_i),
+	.rst_i(rst_i),
 
 	.we_i		(instr_we_i),
 	.adrs_i	(instr_adrs_i),
@@ -74,8 +74,8 @@ cache_controller
 ) 
 cache_ctrl_data
 (
-	.i_clk(clk_i),
-	.i_rst(rst_i),
+	.clk_i(clk_i),
+	.rst_i(rst_i),
 
 	.we_i		(data_we_i),
 	.adrs_i	(data_adrs_i),

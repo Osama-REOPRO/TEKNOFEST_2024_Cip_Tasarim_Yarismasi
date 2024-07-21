@@ -5,14 +5,39 @@ Running: D:/Xilinx/Vivado/2023.2/bin/unwrapped/win64.o/xelab.exe --incr --debug 
 Using 2 slave threads.
 Starting static elaboration
 Pass Through NonSizing Optimizer
-WARNING: [VRFC 10-3091] actual bit length 3 differs from formal bit length 4 for port 'funct3_E' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Desktop/pipeline_top.v:57]
-WARNING: [VRFC 10-5021] port 'mem_gnt' is not connected on this instance [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/teknofest_wrapper.sv:82]
+WARNING: [VRFC 10-3091] actual bit length 3 differs from formal bit length 4 for port 'funct3_E' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Desktop/pipeline_top.v:99]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 32 for port 'main_adrs_o' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/memory_controller.v:61]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 128 for port 'main_wdata_o' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/memory_controller.v:62]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 16 for port 'main_wstrb_o' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/memory_controller.v:63]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 128 for port 'main_rdata_i' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/memory_controller.v:66]
+WARNING: [VRFC 10-3091] actual bit length 2 differs from formal bit length 4 for port 'o_num' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/imports/new/cache.v:82]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 32 for port 'main_adrs_o' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/memory_controller.v:89]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 128 for port 'main_wdata_o' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/memory_controller.v:90]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 16 for port 'main_wstrb_o' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/memory_controller.v:91]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 128 for port 'main_rdata_i' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/memory_controller.v:94]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 32 for port 'main_adrs_instr_i' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/memory_controller.v:103]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 128 for port 'main_wdata_instr_i' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/memory_controller.v:104]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 16 for port 'main_wstrb_instr_i' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/memory_controller.v:105]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 128 for port 'main_rdata_instr_o' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/memory_controller.v:108]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 32 for port 'main_adrs_data_i' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/memory_controller.v:111]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 128 for port 'main_wdata_data_i' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/memory_controller.v:112]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 16 for port 'main_wstrb_data_i' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/memory_controller.v:113]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 128 for port 'main_rdata_data_o' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/memory_controller.v:116]
+WARNING: [VRFC 10-5021] port 'mem_gnt' is not connected on this instance [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/teknofest_wrapper.sv:147]
+WARNING: [VRFC 10-3129] assignment to input 'mem_instr_done_i' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Desktop/pipeline_top.v:35]
+WARNING: [VRFC 10-3129] assignment to input 'mem_instr_rdata_i' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Desktop/pipeline_top.v:36]
+WARNING: [VRFC 10-3129] assignment to input 'mem_data_done_i' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Desktop/pipeline_top.v:43]
+WARNING: [VRFC 10-3129] assignment to input 'mem_data_rdata_i' [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Desktop/pipeline_top.v:44]
+WARNING: [VRFC 10-1324] repetition multiplier must be positive [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/imports/new/cache.v:122]
+WARNING: [VRFC 10-1324] repetition multiplier must be positive [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/imports/new/cache.v:123]
+WARNING: [VRFC 10-1324] repetition multiplier must be positive [D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/imports/new/cache.v:124]
 Completed static elaboration
 Starting simulation data flow analysis
 WARNING: [XSIM 43-4099] "D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/programmer.sv" Line 1. Module programmer(UART_BAUD_RATE=32'b010110111000110110000,CPU_FREQ_HZ=32'b0100011110000110100011000000) doesn't have a timescale but at least one module in design has a timescale.
 WARNING: [XSIM 43-4099] "D:/Documents/vivado/wrapper/teknofest_wrapper_2024/teknofest_project_2024.srcs/sources_1/new/programmer.sv" Line 1. Module programmer(UART_BAUD_RATE=32'b010110111000110110000,CPU_FREQ_HZ=32'b0100011110000110100011000000) doesn't have a timescale but at least one module in design has a timescale.
 Completed simulation data flow analysis
 Time Resolution for simulation is 1ps
+Compiling module xil_defaultlib.core_memory_interface
 Compiling module xil_defaultlib.Mux
 Compiling module xil_defaultlib.PC_Module
 Compiling module xil_defaultlib.Instruction_Memory
@@ -50,6 +75,14 @@ Compiling module xil_defaultlib.memory_cycle
 Compiling module xil_defaultlib.writeback_cycle
 Compiling module xil_defaultlib.hazard_unit
 Compiling module xil_defaultlib.Pipeline_top
+Compiling module xil_defaultlib.LFSR(size=0)
+Compiling module xil_defaultlib.cache(C=32,b=4,N=1)
+Compiling module xil_defaultlib.cache_controller(C=32,b=4,N=1)
+Compiling module xil_defaultlib.LFSR(size=1)
+Compiling module xil_defaultlib.cache(C=32,b=4)
+Compiling module xil_defaultlib.cache_controller(C=32,b=4)
+Compiling module xil_defaultlib.conflict_resolver
+Compiling module xil_defaultlib.memory_controller
 Compiling module xil_defaultlib.programmer(UART_BAUD_RATE=32'b01...
 Compiling module xil_defaultlib.teknofest_memory(USE_SRAM=32'b01...
 Compiling module xil_defaultlib.teknofest_wrapper(USE_SRAM=32'b0...

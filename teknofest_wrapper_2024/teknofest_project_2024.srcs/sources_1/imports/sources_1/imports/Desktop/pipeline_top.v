@@ -22,26 +22,26 @@ module Pipeline_top(
 	// and vice versa
 	// could do sign extension here
 	core_memory_interface cmi(
-		.clk(clk), .rst(rst_H),
+		.clk_i(clk), .rst_i(rst_H),
 		// core signals
 			// todo
 		// external signals
 		// instruction mem operations
-		.mem_instr_we(mem_instr_we_o),
-		.mem_instr_adrs(mem_instr_adrs_o),
-		.mem_instr_wdata(mem_instr_wdata_o),
-		.mem_instr_wsize(mem_instr_wsize_o),
-		.mem_instr_req(mem_instr_req_o),
-		.mem_instr_done(mem_instr_done_i),
-		.mem_instr_rdata(mem_instr_rdata_i),
+		.mem_instr_we_o(mem_instr_we_o),
+		.mem_instr_adrs_o(mem_instr_adrs_o),
+		.mem_instr_wdata_o(mem_instr_wdata_o),
+		.mem_instr_wsize_o(mem_instr_wsize_o),
+		.mem_instr_req_o(mem_instr_req_o),
+		.mem_instr_done_i(mem_instr_done_i),
+		.mem_instr_rdata_i(mem_instr_rdata_i),
 		// data mem operations
-		.mem_data_we(mem_data_we_o),
-		.mem_data_adrs(mem_data_adrs_o),
-		.mem_data_wdata(mem_data_wdata_o),
-		.mem_data_wsize(mem_data_wsize_o),
-		.mem_data_req(mem_data_req_o),
-		.mem_data_done(mem_data_done_i),
-		.mem_data_rdata(mem_data_rdata_i)
+		.mem_data_we_o(mem_data_we_o),
+		.mem_data_adrs_o(mem_data_adrs_o),
+		.mem_data_wdata_o(mem_data_wdata_o),
+		.mem_data_wsize_o(mem_data_wsize_o),
+		.mem_data_req_o(mem_data_req_o),
+		.mem_data_done_i(mem_data_done_i),
+		.mem_data_rdata_i(mem_data_rdata_i)
 	);
 
   
