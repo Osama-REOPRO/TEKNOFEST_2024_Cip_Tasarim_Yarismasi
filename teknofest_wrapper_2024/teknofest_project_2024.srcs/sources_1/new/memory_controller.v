@@ -4,29 +4,29 @@
 module memory_controller(
 	input clk_i, rst_i,
 	// instruction mem operations
-	input  				instr_we_i,
-	input  	  [31:0] instr_adrs_i,
-	input  	  [31:0]	instr_wdata_i,
-	input  	  [2:0]  instr_wsize_i, // 0:byte, 1:half, 2:word
-	input  				instr_req_i,
-	output reg 			instr_done_o,
-	output reg [31:0]	instr_rdata_o,
+	input   		  instr_we_i,
+	input  [31:0] instr_adrs_i,
+	input  [31:0] instr_wdata_i,
+	input  [2:0]  instr_wsize_i, // 0:byte, 1:half, 2:word
+	input   		  instr_req_i,
+	output 		  instr_done_o,
+	output [31:0] instr_rdata_o,
 	// data mem operations
-	input  				data_we_i,
-	input  	  [31:0] data_adrs_i,
-	input  	  [31:0] data_wdata_i,
-	input  	  [2:0]  data_wsize_i, // 0:byte, 1:half, 2:word
-	input  		  		data_req_i,
-	output reg	  		data_done_o,
-	output reg [31:0]	data_rdata_o,
+	input   		  data_we_i,
+	input  [31:0] data_adrs_i,
+	input  [31:0] data_wdata_i,
+	input  [2:0]  data_wsize_i, // 0:byte, 1:half, 2:word
+	input     	  data_req_i,
+	output	  	  data_done_o,
+	output [31:0] data_rdata_o,
 	// main mem operations
-	output reg 		    main_we_o,
-	output reg [31:0]  main_adrs_o,
-	output reg [127:0] main_wdata_o,
-	output reg [15:0]  main_wstrb_o, // careful, strb not size
-	output reg 		    main_req_o,
-	input  		   	 main_done_i,
-	input  	  [127:0] main_rdata_i
+	output 		   main_we_o,
+	output [31:0]  main_adrs_o,
+	output [127:0] main_wdata_o,
+	output [15:0]  main_wstrb_o, // careful, strb not size
+	output 		   main_req_o,
+	input      	 	main_done_i,
+	input  [127:0] main_rdata_i
 );
 
 // todo: replace with final params

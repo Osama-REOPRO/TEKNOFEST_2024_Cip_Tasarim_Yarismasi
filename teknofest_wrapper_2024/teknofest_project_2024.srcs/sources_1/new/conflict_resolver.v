@@ -55,7 +55,7 @@ always @(clk_i) begin
 					else 				allowed <= none;
 				end
 			end
-		end
+		endcase
 	end
 end
 
