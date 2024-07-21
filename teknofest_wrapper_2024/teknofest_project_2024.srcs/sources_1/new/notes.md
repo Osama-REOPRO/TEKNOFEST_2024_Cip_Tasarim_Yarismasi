@@ -15,3 +15,9 @@ logic [127:0] memory [MEM_DEPTH-1:0];
 this one does not use UART, we can use it to test the core on it's own without the uart functionality, this is good
 it also doesn't use that ip memory block, that one is connected to the uart and is much slower I think
 the ip memory block is only used when not using sram
+
+# Memory controller notes
+## wsize
+0:byte, 1:half, 2:word
+- Memory controller expects data to be placed at the beginning of the 32-bit input, so if we are sending 1-byte, wherever this byte might have been originally, here it must be place at the beginning of the input word, then I infer from the address you gave me where I should place this byte
+- Same for the 2-byte case, you place the 2-bytes at the beginning of the input word

@@ -39,8 +39,8 @@ reg [`op_N:0]  op_dc;
 reg 				mem_operation_dc;
 wire 				mem_operation_done_dc;
 reg  [15:0]		valid_bytes_dc;
-reg  [128:0] 	write_data_dc;
-wire [128:0] 	read_data_dc;
+reg  [127:0] 	write_data_dc;
+wire [127:0] 	read_data_dc;
 
 
 reg set_valid_dc;
@@ -232,18 +232,53 @@ always @(posedge clk_i) begin
 			write_st: begin
 				// todo
 				case (op_sub_state)
+
 					write_begin_st: begin
 						if (write_needed_cache_dc) op_sub_state <= write_cache_st;
 						else op_sub_state <= write_main_st;
 					end
 
 					write_cache_st: begin
-						// todo
 						case (cache_sub_state)
 							init: begin
 								op_dc 			   <= `write_op;
 								mem_operation_dc  <= 1'b1;
-								valid_bytes_dc <= {(4*b_dc){1'b1}}; // todo: bookmark
+
+								// valid_bytes_dc depend on whether we are writing
+								// from input or we are writing missing data from main
+								// mem. If we are writing from input then valid bytes
+								// will be determined by mem_data_wsize_i, if we are
+								// writing missing data from above then all are valid
+								if (hit_occurred_dc) begin
+									// only write valid bytes from input
+									case (mem_data_wsize_i) // 0:byte, 1:half, 2:word
+										2'h0: begin
+											// byte, must be at the beginning of input word
+											valid_bytes_dc <= {(4*b_dc){1'b0}};
+											valid_bytes_dc[mem_data_adrs_i % (4*b_dc)] <= 1'b1; // todo: verify
+
+											write_data_dc[((mem_data_adrs_i % (4*b_dc))*8)-1 +:8] <= mem_data_wdata_i[7:0]; // todo: verify
+										end
+										2'h1: begin
+											// half word, must be at beginning of word (lower half)
+											valid_bytes_dc <= {(4*b_dc){1'b0}};
+											valid_bytes_dc[(mem_data_adrs_i*2) % (4*b_dc) +:2] <= 2'b11; // todo: verify
+
+											write_data_dc[(((mem_data_adrs_i*2) % (4*b_dc))*16)-1 +:16] <= mem_data_wdata_i[15:0]; // todo: verify
+										end
+										2'h2: begin
+											// word
+											valid_bytes_dc <= {(4*b_dc){1'b0}};
+											valid_bytes_dc[(mem_data_adrs_i*4) % (4*b_dc) +:4] <= 4'b1111; // todo: verify
+
+											write_data_dc[(((mem_data_adrs_i*4) % (4*b_dc))*32)-1 +:32] <= mem_data_wdata_i; // todo: verify
+										end
+									endcase
+								end else begin
+									// write all from above
+									valid_bytes_dc <= {(4*b_dc){1'b1}}; // all valid
+									write_data_dc <= mem_main_rdata_i; // todo: verify
+								end
 
 								cache_sub_state		<= busy;
 							end
@@ -256,13 +291,8 @@ always @(posedge clk_i) begin
 							end
 							finish: begin
 								if (!mem_operation_done_dc) begin
-									if ((op_dc == `read_op) && hit_occurred_dc) begin
-										// if hit occurred and we are in read state then we simply return the data
-										mem_data_rdata_o <= read_data_dc[(mem_data_adrs_i[3:2]*32)-1 +: 32]; // todo: verify
-										op_sub_state <= read_done_st;
-									end else begin
-										op_sub_state <= read_main_st;
-									end
+									if (write_needed_main_dc) 	op_sub_state <= write_main_st;
+									else 								op_sub_state <= write_done_st;
 
 									cache_sub_state  <= init;
 								end
@@ -272,17 +302,39 @@ always @(posedge clk_i) begin
 
 			  		write_main_st: begin
 						// todo
+						case (cache_sub_state)
+							init: begin
+								mem_main_we_o <= 1'b1;
+								mem_main_req_o  <= 1'b1;
+								mem_main_wstrb_o <= {(16){1'b1}}; // all valid
+								mem_main_wdata_o <= read_data_dc; // we must be evacuating
+
+								cache_sub_state		<= busy;
+							end
+							busy: begin
+								if (mem_main_done_i) begin
+									mem_main_req_o <= 1'b0;
+
+									cache_sub_state 	  <= finish;
+								end
+							end
+							finish: begin
+								if (!mem_main_done_i) begin
+									op_sub_state <= write_done_st;
+
+									cache_sub_state  <= init;
+								end
+							end
+						endcase
 					end
 
 			  		write_done_st: begin
-						// todo
+						state_dc <= done_st;
+
+						op_sub_state <= write_begin_st;
 					end
 
 				endcase
-			end
-
-			done_st: begin
-				// todo
 			end
 
 		endcase
