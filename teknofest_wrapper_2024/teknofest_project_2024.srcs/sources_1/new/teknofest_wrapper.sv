@@ -10,7 +10,7 @@ module teknofest_wrapper #(
     input logic sys_rst_n,
     input logic sys_clk, // TODO: SRAM kullan?rken bunu cpu clock olarak kullan, yoksa DDR ui_clk
     
-    input logic ram_prog_rx_i,
+    input logic ram_prog_rx_i, // uart rx port
     
     inout  [15:0] ddr2_dq,
     inout  [1:0]  ddr2_dqs_n,

@@ -8,7 +8,7 @@ module tb_teknofest_wrapper #(
 
 
 logic sys_rst_n, sys_clk;
-logic ram_prog_rx_i; // wrapper input
+logic ram_prog_rx_i; // wrapper input, use this for uart
 
 
 // osama: main memory related signals

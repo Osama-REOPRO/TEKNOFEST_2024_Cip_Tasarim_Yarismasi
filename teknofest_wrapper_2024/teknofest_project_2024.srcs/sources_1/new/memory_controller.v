@@ -3,6 +3,7 @@
 
 module memory_controller(
 	input clk_i, rst_i,
+	// -------------------- core signals
 	// instruction mem operations
 	input   		  instr_we_i,
 	input  [31:0] instr_adrs_i,
@@ -19,14 +20,22 @@ module memory_controller(
 	input     	  data_req_i,
 	output	  	  data_done_o,
 	output [31:0] data_rdata_o,
-	// main mem operations
+	// -------------------- main mem signals
 	output 		   main_we_o,
 	output [31:0]  main_adrs_o,
 	output [127:0] main_wdata_o,
 	output [15:0]  main_wstrb_o, // careful, strb not size
 	output 		   main_req_o,
 	input      	 	main_done_i,
-	input  [127:0] main_rdata_i
+	input  [127:0] main_rdata_i,
+	// -------------------- memory-mapped i/o signals
+	output 		   io_we_o,
+	output [31:0]  io_adrs_o,
+	output [31:0]  io_wdata_o,
+	// input  [2:0]  data_wsize_i, // ignored, always word read/write
+	output 		   io_req_o,
+	input      	 	io_done_i,
+	input  [31:0]  io_rdata_i
 );
 
 // todo: replace with final params
@@ -37,6 +46,86 @@ localparam N_instr = 1; // degree of associativity (blocks per set)
 localparam C_data = 32; // capacity (total words)
 localparam b_data = 4; // block size (words per block)
 localparam N_data = 2; // degree of associativity (blocks per set)
+
+// ----------------- intermediate signals
+// between io router and caches
+wire 		    instr_we;
+wire [31:0]  instr_adrs;
+wire [31:0]  instr_wdata;
+wire [2:0]   instr_wstrb;
+wire 		    instr_req;
+wire     	 instr_done;
+wire [31:0]  instr_rdata;
+
+wire 		    data_we;
+wire [31:0]  data_adrs;
+wire [31:0]  data_wdata;
+wire [2:0]   data_wstrb;
+wire 		    data_req;
+wire     	 data_done;
+wire [31:0]  data_rdata;
+// between caches and main mem
+wire 		    instr_main_we;
+wire [31:0]  instr_main_adrs;
+wire [127:0] instr_main_wdata;
+wire [15:0]  instr_main_wstrb;
+wire 		    instr_main_req;
+wire     	 instr_main_done;
+wire [127:0] instr_main_rdata;
+
+wire 		    data_main_we;
+wire [31:0]  data_main_adrs;
+wire [127:0] data_main_wdata;
+wire [15:0]  data_main_wstrb;
+wire 		    data_main_req;
+wire     	 data_main_done;
+wire [127:0] data_main_rdata;
+
+memory_mapped_io_router io_router (
+	.clk_i(clk_i),
+	.rst_i(rst_i),
+	// -------------- incoming
+	// instr
+	.instr_we_i	   (instr_we_i),
+	.instr_adrs_i  (instr_adrs_i),
+	.instr_wdata_i (instr_wdata_i),
+	.instr_wsize_i (instr_wsize_i),
+	.instr_req_i   (instr_req_i),
+	.instr_done_o  (instr_done_o),
+	.instr_rdata_o (instr_rdata_o),
+	// data
+	.data_we_i	   (data_we_i),
+	.data_adrs_i   (data_adrs_i),
+	.data_wdata_i  (data_wdata_i),
+	.data_wsize_i  (data_wsize_i),
+	.data_req_i    (data_req_i),
+	.data_done_o   (data_done_o),
+	.data_rdata_o  (data_rdata_o),
+	// -------------- result
+	// instr
+	.instr_we_o	   (instr_we),
+	.instr_adrs_o  (instr_adrs),
+	.instr_wdata_o (instr_wdata),
+	.instr_wstrb_o (instr_wsize),
+	.instr_req_o   (instr_req),
+	.instr_done_i  (instr_done),
+	.instr_rdata_i (instr_rdata),
+	// data
+	.data_we_o	   (data_we),
+	.data_adrs_o   (data_adrs),
+	.data_wdata_o  (data_wdata),
+	.data_wstrb_o  (data_wsize),
+	.data_req_o    (data_req),
+	.data_done_i   (data_done),
+	.data_rdata_i  (data_rdata),
+	// io memory map
+	.io_we_o	  		(io_we_o),
+	.io_adrs_o  	(io_adrs_o),
+	.io_wdata_o 	(io_wdata_o),
+	.io_req_o		(io_req_o),
+	.io_done_i		(io_done_i),
+	.io_rdata_i		(io_rdata_i)
+);
 
 cache_controller
 #(
@@ -57,13 +146,13 @@ cache_ctrl_instr
 	.done_o	(instr_done_o),
 	.rdata_o (instr_rdata_o),
 
-	.main_we_o	  	(main_we_instr),
-	.main_adrs_o  	(main_adrs_instr),
-	.main_wdata_o 	(main_wdata_instr),
-	.main_wstrb_o 	(main_wstrb_instr),
-	.main_req_o		(main_req_instr),
-	.main_done_i	(main_done_instr),
-	.main_rdata_i	(main_rdata_instr)
+	.main_we_o	  	(instr_main_we),
+	.main_adrs_o  	(instr_main_adrs),
+	.main_wdata_o 	(instr_main_wdata),
+	.main_wstrb_o 	(instr_main_wstrb),
+	.main_req_o		(instr_main_req),
+	.main_done_i	(instr_main_done),
+	.main_rdata_i	(instr_main_rdata)
 );
 
 cache_controller
@@ -85,43 +174,43 @@ cache_ctrl_data
 	.done_o	(data_done_o),
 	.rdata_o (data_rdata_o),
 
-	.main_we_o	  	(main_we_data),
-	.main_adrs_o  	(main_adrs_data),
-	.main_wdata_o 	(main_wdata_data),
-	.main_wstrb_o 	(main_wstrb_data),
-	.main_req_o		(main_req_data),
-	.main_done_i	(main_done_data),
-	.main_rdata_i	(main_rdata_data)
+	.main_we_o	  	(data_main_we),
+	.main_adrs_o  	(data_main_adrs),
+	.main_wdata_o 	(data_main_wdata),
+	.main_wstrb_o 	(data_main_wstrb),
+	.main_req_o		(data_main_req),
+	.main_done_i	(data_main_done),
+	.main_rdata_i	(data_main_rdata)
 );
 
-// todo
-conflict_resolver con_res(
+// resolve conflicts between signals coming from caches to main
+conflict_resolver_caches_main con_res_main(
 	.clk_i(clk_i),
 	.rst_i(rst_i),
 	// instr
-	.main_we_instr_i	  (main_we_instr),
-	.main_adrs_instr_i  (main_adrs_instr),
-	.main_wdata_instr_i (main_wdata_instr),
-	.main_wstrb_instr_i (main_wstrb_instr),
-	.main_req_instr_i   (main_req_instr),
-	.main_done_instr_o  (main_done_instr),
-	.main_rdata_instr_o (main_rdata_instr),
+	.instr_we_i	   (instr_main_we),
+	.instr_adrs_i  (instr_main_adrs),
+	.instr_wdata_i (instr_main_wdata),
+	.instr_wstrb_i (instr_main_wstrb),
+	.instr_req_i   (instr_main_req),
+	.instr_done_o  (instr_main_done),
+	.instr_rdata_o (instr_main_rdata),
 	// data
-	.main_we_data_i	  (main_we_data),
-	.main_adrs_data_i   (main_adrs_data),
-	.main_wdata_data_i  (main_wdata_data),
-	.main_wstrb_data_i  (main_wstrb_data),
-	.main_req_data_i    (main_req_data),
-	.main_done_data_o   (main_done_data),
-	.main_rdata_data_o  (main_rdata_data),
+	.data_we_i	   (data_main_we),
+	.data_adrs_i   (data_main_adrs),
+	.data_wdata_i  (data_main_wdata),
+	.data_wstrb_i  (data_main_wstrb),
+	.data_req_i    (data_main_req),
+	.data_done_o   (data_main_done),
+	.data_rdata_o  (data_main_rdata),
 	// result
-	.main_we_o	  		  (main_we_o),
-	.main_adrs_o  		  (main_adrs_o),
-	.main_wdata_o 		  (main_wdata_o),
-	.main_wstrb_o 		  (main_wstrb_o),
-	.main_req_o			  (main_req_o),
-	.main_done_i		  (main_done_i),
-	.main_rdata_i		  (main_rdata_i)
+	.res_we_o	  	(main_we_o),
+	.res_adrs_o  	(main_adrs_o),
+	.res_wdata_o 	(main_wdata_o),
+	.res_wstrb_o 	(main_wstrb_o),
+	.res_req_o		(main_req_o),
+	.res_done_i		(main_done_i),
+	.res_rdata_i	(main_rdata_i)
 );
 
 endmodule

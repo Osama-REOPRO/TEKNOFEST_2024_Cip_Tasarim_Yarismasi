@@ -29,8 +29,12 @@ the ip memory block is only used when not using sram
 - Memory maps should be designed to require only 32-bit memory accesses
     - so you only use word write/read
 - We should write a program the checks the uart in an infinite loop, reads instructions from it and executes them then goes back to checking the uart and so on, this way we can continuously control the processor through the uart port
+- remember that we have memory-mapped io, meaning that the core interacts with io (uart) using a group of addresses in memory
+    - so if the core is reading/writing one of the io-dedicated addresses, the memory controller needs to intercept 
+    - so the memory controller should intercept any memory operation headed to an io-dedicated address and divert it to io control registers instead of caches or main memory
 
 # Program to run infinitely on processor
+(note only use word read/writes with memory-map according to spec)
 1. write word `uart_ctrl`
     - set tx_en to 0 (not sending data initially)
     - set rx_en to 1 (to receive instructions)
@@ -43,7 +47,7 @@ the ip memory block is only used when not using sram
                         - `rx_full`
                         - `rx_empty`
 4. if not `rx_empty` then go to 4., else go to 2.
-5. read byte `uart_rdata` and place in instruction memory
+5. read word `uart_rdata` and place in instruction memory
     - you place it right afterward so it executes next
     - you place it at a byte address incremented by `byte_num` so after we write 4 times we end up with a full instruction which is a word long
 6. increment `byte_num`
