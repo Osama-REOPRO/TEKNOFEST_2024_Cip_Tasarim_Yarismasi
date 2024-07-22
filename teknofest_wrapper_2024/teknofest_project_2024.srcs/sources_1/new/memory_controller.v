@@ -28,14 +28,14 @@ module memory_controller(
 	output 		   main_req_o,
 	input      	 	main_done_i,
 	input  [127:0] main_rdata_i,
-	// -------------------- memory-mapped i/o signals
-	output 		   io_we_o,
-	output [31:0]  io_adrs_o,
-	output [31:0]  io_wdata_o,
+	// -------------------- memory-mapped uart signals
+	output 		   uart_we_o,
+	output [31:0]  uart_adrs_o,
+	output [31:0]  uart_wdata_o,
 	// input  [2:0]  data_wsize_i, // ignored, always word read/write
-	output 		   io_req_o,
-	input      	 	io_done_i,
-	input  [31:0]  io_rdata_i
+	output 		   uart_req_o,
+	input      	 	uart_done_i,
+	input  [31:0]  uart_rdata_i
 );
 
 // todo: replace with final params
@@ -47,23 +47,76 @@ localparam C_data = 32; // capacity (total words)
 localparam b_data = 4; // block size (words per block)
 localparam N_data = 2; // degree of associativity (blocks per set)
 
-// ----------------- intermediate signals
-// between io router and caches
-wire 		    instr_we;
-wire [31:0]  instr_adrs;
-wire [31:0]  instr_wdata;
-wire [2:0]   instr_wstrb;
-wire 		    instr_req;
-wire     	 instr_done;
-wire [31:0]  instr_rdata;
+// memory maps
+localparam adrs_main_start = 32'h80000000;
+localparam adrs_main_end 	= 32'hffffffff;
+localparam adrs_uart_start = 32'h20000000;
+localparam adrs_uart_end 	= 32'h2000000c + 32'd4;
 
-wire 		    data_we;
-wire [31:0]  data_adrs;
-wire [31:0]  data_wdata;
-wire [2:0]   data_wstrb;
-wire 		    data_req;
-wire     	 data_done;
-wire [31:0]  data_rdata;
+wire adrs_instr_is_uart = (instr_adrs_i >= adrs_uart_start) && (instr_adrs_i <= adrs_uart_end);
+wire adrs_instr_is_interface = instr_adrs_i > adrs_uart_end;
+wire adrs_instr_is_main = (instr_adrs_i >= adrs_main_start) && (instr_adrs_i <= adrs_main_end);
+
+wire adrs_data_is_uart = (data_adrs_i >= adrs_uart_start) && (data_adrs_i <= adrs_uart_end);
+wire adrs_data_is_interface = data_adrs_i > adrs_uart_end;
+wire adrs_data_is_main = (data_adrs_i >= adrs_main_start) && (data_adrs_i <= adrs_main_end);
+
+wire adrs_is_uart = adrs_instr_is_uart || adrs_data_is_uart;
+
+// ----------------- intermediate signals
+// uart signals
+assign uart_we_o 		= adrs_is_uart 	? uart_we    :  1'b0;
+assign uart_adrs_o 	= adrs_is_uart 	? uart_adrs  : 32'b0;
+assign uart_wdata_o  = adrs_is_uart 	? uart_wdata : 32'b0;
+assign uart_req_o 	= adrs_is_uart 	? uart_req   :  3'b0;
+assign uart_done  = adrs_is_uart ? uart_done_i	 :	1'b0;
+assign uart_rdata = adrs_is_uart ? uart_rdata_i	 : 32'b0;
+// resolve conflicts between signals going to uart
+conflict_resolver_mem_map_io con_res_uart(
+	.clk_i(clk_i),
+	.rst_i(rst_i),
+	// instr
+	.instr_we_i	   (instr_we_i),
+	.instr_adrs_i  (instr_adrs_i),
+	.instr_wdata_i (instr_wdata_i),
+	.instr_wsize_i (instr_wsize_i),
+	.instr_req_i   (instr_req_i),
+	.instr_done_o  (instr_done_o),
+	.instr_rdata_o (instr_rdata_o),
+	// data
+	.data_we_i	   (data_we_i),
+	.data_adrs_i   (data_adrs_i),
+	.data_wdata_i  (data_wdata_i),
+	.data_wsize_i  (data_wsize_i),
+	.data_req_i    (data_req_i),
+	.data_done_o   (data_done_o),
+	.data_rdata_o  (data_rdata_o),
+	// result
+	.res_we_o	  	(uart_we),
+	.res_adrs_o  	(uart_adrs),
+	.res_wdata_o 	(uart_wdata),
+	.res_wsize_o 	(), // not used
+	.res_req_o		(uart_req),
+	.res_done_i		(uart_done),
+	.res_rdata_i	(uart_rdata)
+);
+// caches inputs
+wire 		    instr_we    = adrs_instr_is_main? instr_we_i    :  1'b0;
+wire [31:0]  instr_adrs  = adrs_instr_is_main? instr_adrs_i  : 32'b0;
+wire [31:0]  instr_wdata = adrs_instr_is_main? instr_wdata_i : 32'b0;
+wire [2:0]   instr_wsize = adrs_instr_is_main? instr_wsize_i :  3'b0;
+wire 		    instr_req   = adrs_instr_is_main? instr_req_i   :  1'b0;
+assign instr_done_o  = adrs_instr_is_main? instr_done  :  1'b0;
+assign instr_rdata_o = adrs_instr_is_main? instr_rdata : 32'b0;
+
+wire 		    data_we    = adrs_data_is_main? data_we_i    :  1'b0;
+wire [31:0]  data_adrs  = adrs_data_is_main? data_adrs_i  : 32'b0;
+wire [31:0]  data_wdata = adrs_data_is_main? data_wdata_i : 32'b0;
+wire [2:0]   data_wsize = adrs_data_is_main? data_wsize_i :  3'b0;
+wire 		    data_req   = adrs_data_is_main? data_req_i   :  1'b0;
+assign data_done_o  = adrs_data_is_main? data_done  :  1'b0;
+assign data_rdata_o = adrs_data_is_main? data_rdata : 32'b0;
+
 // between caches and main mem
 wire 		    instr_main_we;
 wire [31:0]  instr_main_adrs;
@@ -81,52 +134,6 @@ wire 		    data_main_req;
 wire     	 data_main_done;
 wire [127:0] data_main_rdata;
 
-memory_mapped_io_router io_router (
-	.clk_i(clk_i),
-	.rst_i(rst_i),
-	// -------------- incoming
-	// instr
-	.instr_we_i	   (instr_we_i),
-	.instr_adrs_i  (instr_adrs_i),
-	.instr_wdata_i (instr_wdata_i),
-	.instr_wsize_i (instr_wsize_i),
-	.instr_req_i   (instr_req_i),
-	.instr_done_o  (instr_done_o),
-	.instr_rdata_o (instr_rdata_o),
-	// data
-	.data_we_i	   (data_we_i),
-	.data_adrs_i   (data_adrs_i),
-	.data_wdata_i  (data_wdata_i),
-	.data_wsize_i  (data_wsize_i),
-	.data_req_i    (data_req_i),
-	.data_done_o   (data_done_o),
-	.data_rdata_o  (data_rdata_o),
-	// -------------- result
-	// instr
-	.instr_we_o	   (instr_we),
-	.instr_adrs_o  (instr_adrs),
-	.instr_wdata_o (instr_wdata),
-	.instr_wstrb_o (instr_wsize),
-	.instr_req_o   (instr_req),
-	.instr_done_i  (instr_done),
-	.instr_rdata_i (instr_rdata),
-	// data
-	.data_we_o	   (data_we),
-	.data_adrs_o   (data_adrs),
-	.data_wdata_o  (data_wdata),
-	.data_wstrb_o  (data_wsize),
-	.data_req_o    (data_req),
-	.data_done_i   (data_done),
-	.data_rdata_i  (data_rdata),
-	// io memory map
-	.io_we_o	  		(io_we_o),
-	.io_adrs_o  	(io_adrs_o),
-	.io_wdata_o 	(io_wdata_o),
-	.io_req_o		(io_req_o),
-	.io_done_i		(io_done_i),
-	.io_rdata_i		(io_rdata_i)
-);
-
 cache_controller
 #(
 	.C(C_instr), // capacity (words)
@@ -138,13 +145,14 @@ cache_ctrl_instr
 	.clk_i(clk_i),
 	.rst_i(rst_i),
 
-	.we_i		(instr_we_i),
-	.adrs_i	(instr_adrs_i),
-	.wdata_i (instr_wdata_i),
-	.wsize_i (instr_wsize_i),
-	.req_i	(instr_req_i),
-	.done_o	(instr_done_o),
-	.rdata_o (instr_rdata_o),
+	// todo: change these after mem map
+	.we_i		(instr_we),
+	.adrs_i	(instr_adrs),
+	.wdata_i (instr_wdata),
+	.wsize_i (instr_wsize),
+	.req_i	(instr_req),
+	.done_o	(instr_done),
+	.rdata_o (instr_rdata),
 
 	.main_we_o	  	(instr_main_we),
 	.main_adrs_o  	(instr_main_adrs),
@@ -166,13 +174,13 @@ cache_ctrl_data
 	.clk_i(clk_i),
 	.rst_i(rst_i),
 
-	.we_i		(data_we_i),
-	.adrs_i	(data_adrs_i),
-	.wdata_i (data_wdata_i),
-	.wsize_i (data_wsize_i),
-	.req_i	(data_req_i),
-	.done_o	(data_done_o),
-	.rdata_o (data_rdata_o),
+	.we_i		(data_we),
+	.adrs_i	(data_adrs),
+	.wdata_i (data_wdata),
+	.wsize_i (data_wsize),
+	.req_i	(data_req),
+	.done_o	(data_done),
+	.rdata_o (data_rdata),
 
 	.main_we_o	  	(data_main_we),
 	.main_adrs_o  	(data_main_adrs),

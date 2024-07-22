@@ -1,4 +1,4 @@
-module memory_mapped_io_router(
+module mapped_memory_router(
 	input clk_i,
 	input rst_i,
 	// ----------- incoming

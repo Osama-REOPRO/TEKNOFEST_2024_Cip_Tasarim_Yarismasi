@@ -43,13 +43,13 @@ always @(clk_i) begin
 				else 						allowed <= none;
 			end
 			instr: begin
-				if (!req_o && !done_i) begin // done
+				if (!req_o && !res_done_i) begin // done
 					if (req_data) 	allowed <= data;
 					else 				allowed <= none;
 				end
 			end
 			data: begin
-				if (!req_o && !done_i) begin // done
+				if (!req_o && !res_done_i) begin // done
 					if (req_instr) allowed <= instr;
 					else 				allowed <= none;
 				end
@@ -64,9 +64,9 @@ assign wdata_o = (allowed == instr)? instr_wdata_i	:(allowed == data)? data_wdat
 assign wsize_o = (allowed == instr)? instr_wsize_i	:(allowed == data)? data_wsize_i : 0;
 assign req_o   = (allowed == instr)? instr_req_i		:(allowed == data)? data_req_i   : 0;
 
-assign instr_done_o  	= (allowed == instr)? 	done_i : 0;
-assign data_done_o  	= (allowed == data)?		done_i : 0;
-assign instr_rdata_o  = (allowed == instr)? 	rdata_i : 0;
-assign data_rdata_o  	= (allowed == data)? 	rdata_i : 0;
+assign instr_done_o  	= (allowed == instr)? 	res_done_i : 0;
+assign data_done_o  	= (allowed == data)?		res_done_i : 0;
+assign instr_rdata_o  = (allowed == instr)? 	res_rdata_i : 0;
+assign data_rdata_o  	= (allowed == data)? 	res_rdata_i : 0;
 
 endmodule
