@@ -22,14 +22,18 @@ module uart_wishbone_controller(
 reg  		  tx_en;
 reg  		  rx_en;
 reg [15:0] baud_div;
-reg        tx_full;
-reg        tx_empty;
-reg        rx_full;
-reg        rx_empty;
+wire       tx_full;
+wire       tx_empty;
+wire       rx_full;
+wire       rx_empty;
 reg        wdata_write_request;
-reg [31:0] wdata;
+wire [7:0]  wdata;
 reg        rdata_read_request;
-reg [31:0] rdata;
+wire [7:0] rdata;
+
+// output assignments
+assign rdata_o[7:0] = rdata;
+assign wdata = wdata_i[7:0];
 
 // uart memory maps
 localparam adrs_uart_ctrl 	 = 32'h20000000;
@@ -43,6 +47,25 @@ wire adrs_is_uart_status = (adrs_i >= adrs_uart_status) && (adrs_i <= adrs_uart_
 wire adrs_is_uart_rdata  = (adrs_i >= adrs_uart_rdata)  && (adrs_i <= adrs_uart_rdata+32'd1);
 wire adrs_is_uart_wdata  = (adrs_i >= adrs_uart_wdata)  && (adrs_i <= adrs_uart_wdata+32'd1);
 
+// combine signals into 32-bit words
+wire [31:0] uart_ctrl;
+assign uart_ctrl[0] = tx_en;
+assign uart_ctrl[1] = tx_en;
+assign uart_ctrl[15:2] = 14'b0;
+assign uart_ctrl[31:16] = baud_div;
+wire [31:0] uart_status;
+assign uart_status[0] = tx_full;
+assign uart_status[1] = tx_empty;
+assign uart_status[2] = rx_full;
+assign uart_status[3] = rx_empty;
+assign uart_status[31:4] = 28'b0;
+wire [31:0] uart_rdata;
+assign uart_rdata[7:0] = rdata;
+assign uart_rdata[31:8] = 24'b0;
+wire [31:0] uart_wdata;
+assign uart_wdata[7:0] = wdata;
+assign uart_wdata[31:8] = 24'b0;
+
 reg [3:0] state;
 localparam idle_st 					= 0,
 			  done_st 					= 1,
@@ -55,7 +78,7 @@ localparam idle_st 					= 0,
 			  write_uart_rdata_st	= 8,
 			  write_uart_wdata_st	= 9;
 
-reg [3:0] mem_sub_state;
+reg [3:0] sub_state;
 localparam init   = 0,
 			  busy   = 1,
 			  finish = 2;
@@ -67,14 +90,8 @@ always @(posedge clk_i) begin
 			tx_en,
 			rx_en,
 			baud_div,
-			tx_full,
-			tx_empty,
-			rx_full,
-			rx_empty,
 			wdata_write_request,
-			wdata,
-			rdata_read_request,
-			rdata
+			rdata_read_request
 			} <= 0;
 	end else begin
 		case (state)
@@ -94,24 +111,56 @@ always @(posedge clk_i) begin
 				if (!req_i) state = idle_st;
 			end
 
-			read_uart_ctrl_st: begin end
-			write_uart_ctrl_st: begin end
 
-			read_uart_status_st: begin end
-			write_uart_status_st: begin end
 
-			read_uart_rdata_st: begin end
-			write_uart_rdata_st: begin end
 
-			read_uart_wdata_st: begin end
+			read_uart_ctrl_st: begin
+				rdata_o <= uart_ctrl;
+				state   <= done_st;
+			end
+
+			read_uart_status_st: begin
+				rdata_o <= uart_status;
+				state   <= done_st;
+			end
+
+			read_uart_rdata_st: begin
+				case (sub_state)
+					0: begin
+						rdata_read_request <= 1'b1;
+						sub_state <= 3'd1;
+					end
+					1: begin
+						rdata_read_request <= 1'b0;
+						sub_state <= 3'd0;
+						state <= done_st;
+					end
+				endcase
+			end
+
+			write_uart_ctrl_st: begin
+				tx_en 	<= wdata_i[0];
+				rx_en 	<= wdata_i[1];
+				baud_div <= wdata_i[31:16];
+				state   <= done_st;
+			end
+
 			write_uart_wdata_st: begin end
+				case (sub_state)
+					0: begin
+						wdata_write_request <= 1'b1;
+						sub_state <= 3'd1;
+					end
+					1: begin
+						wdata_write_request <= 1'b0;
+						sub_state <= 3'd0;
+						state <= done_st;
+					end
+				endcase
 		endcase
 	end
 end
 
-// todo: interpret incoming memory requests as uart operations
-// read/write data from/to appropriate locations in read/write data to
-// internal registers below
 
 wb_m_core_uart wishbone_master_uart (
 	.clk_i         (clk_i),
