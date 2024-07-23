@@ -79,7 +79,14 @@ module teknofest_wrapper #(
 	wire 			 mem_main_req;
 	wire 			 mem_main_done;
 	wire [127:0] mem_main_rdata;
-
+	// memory-mapped uart signals
+	wire 			uart_we;
+	wire [31:0] uart_adrs;
+	wire [31:0] uart_wdata;
+	wire 		   uart_req;
+	wire 			uart_done;
+	wire [31:0] uart_rdata;
+         
     // Core'u burada cagirin.
 	 // core instantiation
     Pipeline_top core(
@@ -103,9 +110,17 @@ module teknofest_wrapper #(
 		 .mem_data_rdata_i(mem_data_rdata)
 		 );
 
+	wire [31:0] WB_UART_ADR;
+	wire [31:0] WB_UART_DAT_IN;
+	wire [31:0] WB_UART_DAT_OUT;
+	wire 		   WB_UART_WE;
+	wire 		   WB_UART_CYC;
+	wire 		   WB_UART_STB;
+	wire 			WB_UART_ACK;
+	wire 			WB_UART_RTY;
 	memory_controller mem_ctrl (
-		.clk_i(clk),
-		.rst_i(rst),
+		.clk_i(core_clk),
+		.rst_i(core_rst_n),
 		// instruction mem operations
 		.instr_we_i(mem_instr_we),
 		.instr_adrs_i(mem_instr_adrs),
@@ -129,11 +144,38 @@ module teknofest_wrapper #(
 		.main_wstrb_o(mem_main_wstrb),
 		.main_req_o(mem_main_req),
 		.main_done_i(mem_main_done),
-		.main_rdata_i(mem_main_rdata)
+		.main_rdata_i(mem_main_rdata),
+		//---------------------------- wb
+		.WB_ADR_O(WB_UART_ADR),
+		.WB_DAT_I(WB_UART_DAT_IN),
+		.WB_DAT_O(WB_UART_DAT_OUT),
+		.WB_WE_O (WB_UART_WE),
+		.WB_CYC_O(WB_UART_CYC),
+		.WB_STB_O(WB_UART_STB),
+		.WB_ACK_I(WB_UART_ACK),
+		.WB_RTY_I(WB_UART_RTY)
+		);
+	
+	wire tx; // uart tx port
+	wb_s_uart uart (
+		.clk_i         (core_clk),
+		.rst_i         (core_rst_n),
+		// wb
+		.ADR_I         (WB_UART_ADR),
+		.DAT_O         (WB_UART_DAT_IN),
+		.DAT_I         (WB_UART_DAT_OUT),
+		.WE_I          (WB_UART_WE),
+		.CYC_I         (WB_UART_CYC),
+		.STB_I         (WB_UART_STB),
+		.ACK_O         (WB_UART_ACK),
+		.RTY_O         (WB_UART_RTY),
+		// uart
+		.rx_i          (ram_prog_rx_i),
+		.tx_o          (tx)
 		);
 
-     // core_mem struct'ini baglayin.
-    // These signals should be connected to the mem controller so it can make memory requests and get responses
+	// core_mem struct'ini baglayin.
+	// These signals should be connected to the mem controller so it can make memory requests and get responses
     assign core_mem.req = mem_main_req;
     assign core_mem.we  = mem_main_we;
     assign core_mem.addr = mem_main_adrs;

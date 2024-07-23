@@ -28,14 +28,15 @@ module memory_controller(
 	output 		   main_req_o,
 	input      	 	main_done_i,
 	input  [127:0] main_rdata_i,
-	// -------------------- memory-mapped uart signals
-	output 		   uart_we_o,
-	output [31:0]  uart_adrs_o,
-	output [31:0]  uart_wdata_o,
-	// input  [2:0]  data_wsize_i, // ignored, always word read/write
-	output 		   uart_req_o,
-	input      	 	uart_done_i,
-	input  [31:0]  uart_rdata_i
+	// wishbone
+	output [31:0] WB_ADR_O;
+	input	 [31:0] WB_DAT_I;
+	output [31:0] WB_DAT_O;
+	output 		  WB_WE_O;
+	output 		  WB_CYC_O;
+	output 		  WB_STB_O;
+	input 		  WB_ACK_I;
+	input 		  WB_RTY_I;
 );
 
 // todo: replace with final params
@@ -53,6 +54,7 @@ localparam adrs_main_end 	= 32'hffffffff;
 localparam adrs_uart_start = 32'h20000000;
 localparam adrs_uart_end 	= 32'h2000000c + 32'd4;
 
+// memory map checks
 wire adrs_instr_is_uart = (instr_adrs_i >= adrs_uart_start) && (instr_adrs_i <= adrs_uart_end);
 wire adrs_instr_is_interface = instr_adrs_i > adrs_uart_end;
 wire adrs_instr_is_main = (instr_adrs_i >= adrs_main_start) && (instr_adrs_i <= adrs_main_end);
@@ -65,12 +67,13 @@ wire adrs_is_uart = adrs_instr_is_uart || adrs_data_is_uart;
 
 // ----------------- intermediate signals
 // uart signals
-assign uart_we_o 		= adrs_is_uart 	? uart_we    :  1'b0;
-assign uart_adrs_o 	= adrs_is_uart 	? uart_adrs  : 32'b0;
-assign uart_wdata_o  = adrs_is_uart 	? uart_wdata : 32'b0;
-assign uart_req_o 	= adrs_is_uart 	? uart_req   :  3'b0;
-assign uart_done  = adrs_is_uart ? uart_done_i	 :	1'b0;
-assign uart_rdata = adrs_is_uart ? uart_rdata_i	 : 32'b0;
+wire		   uart_we;
+wire [31:0] uart_adrs;
+wire [31:0] uart_wdata;
+wire		   uart_req;
+wire        uart_done;
+wire [31:0] uart_rdata;
+
 // resolve conflicts between signals going to uart
 conflict_resolver_mem_map_io con_res_uart(
 	.clk_i(clk_i),
@@ -100,6 +103,34 @@ conflict_resolver_mem_map_io con_res_uart(
 	.res_done_i		(uart_done),
 	.res_rdata_i	(uart_rdata)
 );
+
+// uart
+assign uart_we_ctrl 		= adrs_is_uart 	? uart_we    :  1'b0;
+assign uart_adrs_ctrl 	= adrs_is_uart 	? uart_adrs  : 32'b0;
+assign uart_wdata_ctrl  = adrs_is_uart 	? uart_wdata : 32'b0;
+assign uart_req_ctrl 	= adrs_is_uart 	? uart_req   :  3'b0;
+assign uart_done   = adrs_is_uart ? uart_done_ctrl	 :	 1'b0;
+assign uart_rdata  = adrs_is_uart ? uart_rdata_ctrl : 32'b0;
+
+uart_wishbone_controller uart_wb_ctrl(
+	// signals from mem ctrl
+	uart_we_i(uart_we_ctrl),
+	uart_adrs_i(uart_adrs_ctrl),
+	uart_wdata_i(uart_wdata_ctrl),
+	uart_req_i(uart_req_ctrl),
+	uart_done_o(uart_done_ctrl),
+	uart_rdata_o(uart_rdata_ctrl),
+	//---------------------------- wb
+	WB_ADR_O(WB_ADR_O),
+	WB_DAT_I(WB_DAT_I),
+	WB_DAT_O(WB_DAT_O),
+	WB_WE_O (WB_WE_O),
+	WB_CYC_O(WB_CYC_O),
+	WB_STB_O(WB_STB_O),
+	WB_ACK_I(WB_ACK_I),
+	WB_RTY_I(WB_RTY_I)
+	);
+
 // caches inputs
 wire 		    instr_we    = adrs_instr_is_main? instr_we_i    :  1'b0;
 wire [31:0]  instr_adrs  = adrs_instr_is_main? instr_adrs_i  : 32'b0;
