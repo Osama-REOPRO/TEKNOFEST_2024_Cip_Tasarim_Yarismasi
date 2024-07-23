@@ -29,14 +29,14 @@ module memory_controller(
 	input      	 	main_done_i,
 	input  [127:0] main_rdata_i,
 	// wishbone
-	output [31:0] WB_ADR_O;
-	input	 [31:0] WB_DAT_I;
-	output [31:0] WB_DAT_O;
-	output 		  WB_WE_O;
-	output 		  WB_CYC_O;
-	output 		  WB_STB_O;
-	input 		  WB_ACK_I;
-	input 		  WB_RTY_I;
+	output [31:0] WB_ADR_O,
+	input	 [31:0] WB_DAT_I,
+	output [31:0] WB_DAT_O,
+	output 		  WB_WE_O,
+	output 		  WB_CYC_O,
+	output 		  WB_STB_O,
+	input 		  WB_ACK_I,
+	input 		  WB_RTY_I
 );
 
 // todo: replace with final params
@@ -114,21 +114,21 @@ assign uart_rdata  = adrs_is_uart ? uart_rdata_ctrl : 32'b0;
 
 uart_wishbone_controller uart_wb_ctrl(
 	// signals from mem ctrl
-	we_i(uart_we_ctrl),
-	adrs_i(uart_adrs_ctrl),
-	wdata_i(uart_wdata_ctrl),
-	req_i(uart_req_ctrl),
-	done_o(uart_done_ctrl),
-	rdata_o(uart_rdata_ctrl),
+	.we_i(uart_we_ctrl),
+	.adrs_i(uart_adrs_ctrl),
+	.wdata_i(uart_wdata_ctrl),
+	.req_i(uart_req_ctrl),
+	.done_o(uart_done_ctrl),
+	.rdata_o(uart_rdata_ctrl),
 	//---------------------------- wb
-	WB_ADR_O(WB_ADR_O),
-	WB_DAT_I(WB_DAT_I),
-	WB_DAT_O(WB_DAT_O),
-	WB_WE_O (WB_WE_O),
-	WB_CYC_O(WB_CYC_O),
-	WB_STB_O(WB_STB_O),
-	WB_ACK_I(WB_ACK_I),
-	WB_RTY_I(WB_RTY_I)
+	.WB_ADR_O(WB_ADR_O),
+	.WB_DAT_I(WB_DAT_I),
+	.WB_DAT_O(WB_DAT_O),
+	.WB_WE_O (WB_WE_O),
+	.WB_CYC_O(WB_CYC_O),
+	.WB_STB_O(WB_STB_O),
+	.WB_ACK_I(WB_ACK_I),
+	.WB_RTY_I(WB_RTY_I)
 	);
 
 // caches inputs

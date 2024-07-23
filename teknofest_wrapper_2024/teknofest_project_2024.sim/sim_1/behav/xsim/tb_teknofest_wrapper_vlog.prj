@@ -82,6 +82,7 @@ verilog xil_defaultlib  --include "../../../../teknofest_project_2024.srcs/sourc
 "../../../../teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Desktop/memory_cycle.v" \
 "../../../../teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Downloads/non_restoring_div.v" \
 "../../../../teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Desktop/pipeline_top.v" \
+"../../../../teknofest_project_2024.srcs/sources_1/new/uart_wishbone_controller.v" \
 "../../../../teknofest_project_2024.srcs/sources_1/imports/sources_1/imports/Desktop/writeback_cycle.v" \
 
 sv xil_defaultlib  --include "../../../../teknofest_project_2024.srcs/sources_1/imports/new" --include "../../../../teknofest_project_2024.srcs/sources_1/imports/sim" \
