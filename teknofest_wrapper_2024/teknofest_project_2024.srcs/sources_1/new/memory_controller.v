@@ -114,12 +114,12 @@ assign uart_rdata  = adrs_is_uart ? uart_rdata_ctrl : 32'b0;
 
 uart_wishbone_controller uart_wb_ctrl(
 	// signals from mem ctrl
-	uart_we_i(uart_we_ctrl),
-	uart_adrs_i(uart_adrs_ctrl),
-	uart_wdata_i(uart_wdata_ctrl),
-	uart_req_i(uart_req_ctrl),
-	uart_done_o(uart_done_ctrl),
-	uart_rdata_o(uart_rdata_ctrl),
+	we_i(uart_we_ctrl),
+	adrs_i(uart_adrs_ctrl),
+	wdata_i(uart_wdata_ctrl),
+	req_i(uart_req_ctrl),
+	done_o(uart_done_ctrl),
+	rdata_o(uart_rdata_ctrl),
 	//---------------------------- wb
 	WB_ADR_O(WB_ADR_O),
 	WB_DAT_I(WB_DAT_I),
