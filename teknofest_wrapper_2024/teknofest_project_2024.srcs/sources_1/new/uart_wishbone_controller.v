@@ -7,16 +7,16 @@ module uart_wishbone_controller(
 	// input  [2:0]  wsize_i, // ignored, always word read/write
 	input 		  req_i,
 	output reg        done_o,
-	output [31:0] rdata_o,
+	output reg [31:0] rdata_o,
 	// wishbone
-	input  [31:0] WB_ADR_I,
-	output [31:0] WB_DAT_O,
-	input  [31:0] WB_DAT_I,
-	input 		  WB_WE_I,
-	input 		  WB_CYC_I,
-	input 		  WB_STB_I,
-	output 		  WB_ACK_O,
-	output 		  WB_RTY_O
+	input  [31:0] WB_ADR_O,
+	output [31:0] WB_DAT_I,
+	input  [31:0] WB_DAT_O,
+	input 		  WB_WE_O,
+	input 		  WB_CYC_O,
+	input 		  WB_STB_O,
+	output 		  WB_ACK_I,
+	output 		  WB_RTY_I
 );
 
 reg  		  tx_en;
@@ -29,10 +29,9 @@ wire       rx_empty;
 reg        wdata_write_request;
 wire [7:0]  wdata;
 reg        rdata_read_request;
-reg [7:0] rdata;
+wire [7:0] rdata;
 
 // output assignments
-assign rdata_o[7:0] = rdata;
 assign wdata = wdata_i[7:0];
 
 // uart memory maps
@@ -131,6 +130,7 @@ always @(posedge clk_i) begin
 						sub_state <= 3'd1;
 					end
 					1: begin
+						rdata_o <= uart_rdata;
 						rdata_read_request <= 1'b0;
 						sub_state <= 3'd0;
 						state <= done_st;
@@ -145,7 +145,7 @@ always @(posedge clk_i) begin
 				state   <= done_st;
 			end
 
-			write_uart_wdata_st: begin end
+			write_uart_wdata_st: begin
 				case (sub_state)
 					0: begin
 						wdata_write_request <= 1'b1;
@@ -157,6 +157,7 @@ always @(posedge clk_i) begin
 						state <= done_st;
 					end
 				endcase
+			end
 		endcase
 	end
 end
@@ -178,14 +179,14 @@ wb_m_core_uart wishbone_master_uart (
 	.rdata_read_request_i(rdata_read_request),
 	.rdata_o       (rdata),
 	// wb
-	.ADR_O         (WB_ADR_I),
-	.DAT_I         (WB_DAT_O),
-	.DAT_O         (WB_DAT_I),
-	.WE_O          (WB_WE_I),
-	.CYC_O         (WB_CYC_I),
-	.STB_O         (WB_STB_I),
-	.ACK_I         (WB_ACK_O),
-	.RTY_I         (WB_RTY_O)
+	.ADR_O         (WB_ADR_O),
+	.DAT_I         (WB_DAT_I),
+	.DAT_O         (WB_DAT_O),
+	.WE_O          (WB_WE_O),
+	.CYC_O         (WB_CYC_O),
+	.STB_O         (WB_STB_O),
+	.ACK_I         (WB_ACK_I),
+	.RTY_I         (WB_RTY_I)
 	 );
 
 endmodule

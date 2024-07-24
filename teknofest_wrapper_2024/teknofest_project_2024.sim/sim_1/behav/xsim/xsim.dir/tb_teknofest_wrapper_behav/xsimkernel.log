@@ -1,7 +1,7 @@
-Running: xsim.dir/tb_teknofest_wrapper_behav/xsimk.exe -simmode gui -wdb tb_teknofest_wrapper_behav.wdb -simrunnum 0 -socket 13766
+Running: xsim.dir/tb_teknofest_wrapper_behav/xsimk.exe -simmode gui -wdb tb_teknofest_wrapper_behav.wdb -simrunnum 0 -socket 11435
 Design successfully loaded
-Design Loading Memory Usage: 9088 KB (Peak: 9088 KB)
-Design Loading CPU Usage: 15 ms
+Design Loading Memory Usage: 9224 KB (Peak: 9224 KB)
+Design Loading CPU Usage: 46 ms
 Simulation completed
-Simulation Memory Usage: 18748 KB (Peak: 18748 KB)
-Simulation CPU Usage: 890 ms
+Simulation Memory Usage: 18988 KB (Peak: 18988 KB)
+Simulation CPU Usage: 3905 ms
